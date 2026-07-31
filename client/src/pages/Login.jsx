@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   FaEnvelope,
   FaLock,
@@ -8,16 +8,22 @@ import {
 } from "react-icons/fa";
 
 function Login() {
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     setError("");
+    setSuccess("");
 
+    // Frontend validation
     if (!email.trim()) {
       setError("Please enter your email.");
       return;
@@ -38,9 +44,58 @@ function Login() {
       return;
     }
 
-    alert("Login form validated successfully!");
+    try {
+      setLoading(true);
 
-    // Backend API will be connected later.
+      // LOGIN API
+      const response = await fetch(
+        "http://localhost:5000/api/auth/login",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            email,
+            password,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || "Login failed.");
+        return;
+      }
+
+      // Save JWT token
+      localStorage.setItem("token", data.token);
+
+      // Save logged-in user
+      localStorage.setItem(
+        "user",
+        JSON.stringify(data.user)
+      );
+
+      setSuccess("Login successful!");
+
+      // Redirect after login
+      setTimeout(() => {
+        navigate("/profile");
+      }, 1000);
+
+    } catch (error) {
+      console.error(error);
+
+      setError(
+        "Unable to connect to server. Please make sure backend is running."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -59,9 +114,17 @@ function Login() {
           Login to your account
         </p>
 
+        {/* Error */}
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-600 p-3 rounded-lg mb-5">
             {error}
+          </div>
+        )}
+
+        {/* Success */}
+        {success && (
+          <div className="bg-green-50 border border-green-200 text-green-600 p-3 rounded-lg mb-5">
+            {success}
           </div>
         )}
 
@@ -113,9 +176,10 @@ function Login() {
 
         <button
           type="submit"
-          className="w-full bg-blue-700 hover:bg-blue-800 text-white py-3 rounded-lg font-semibold transition"
+          disabled={loading}
+          className="w-full bg-blue-700 hover:bg-blue-800 disabled:bg-blue-400 text-white py-3 rounded-lg font-semibold transition"
         >
-          Login
+          {loading ? "Logging in..." : "Login"}
         </button>
 
         <p className="text-center mt-6">

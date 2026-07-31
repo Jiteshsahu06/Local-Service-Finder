@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   FaUser,
   FaEnvelope,
@@ -7,15 +7,20 @@ import {
   FaMapMarkerAlt,
   FaEdit,
   FaCalendarCheck,
+  FaSignOutAlt,
 } from "react-icons/fa";
 
 function Profile() {
+  const navigate = useNavigate();
+
+  const storedUser = JSON.parse(localStorage.getItem("user"));
+
   const [isEditing, setIsEditing] = useState(false);
 
   const [user, setUser] = useState({
-    name: "Demo User",
-    email: "demo@example.com",
-    phone: "9876543210",
+    name: storedUser?.name || "User",
+    email: storedUser?.email || "",
+    phone: storedUser?.phone || "",
     location: "Jaipur, Rajasthan",
   });
 
@@ -26,18 +31,69 @@ function Profile() {
     });
   };
 
-  const handleSave = () => {
-    setIsEditing(false);
-    alert("Profile updated successfully!");
+  // Update Profile
+  const handleSave = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/auth/update-profile",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: storedUser.id || storedUser._id,
+            name: user.name,
+            phone: user.phone,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        const updatedUser = {
+          ...storedUser,
+          name: data.user.name,
+          email: data.user.email,
+          phone: data.user.phone,
+        };
+
+        localStorage.setItem(
+          "user",
+          JSON.stringify(updatedUser)
+        );
+
+        setUser({
+          ...user,
+          name: data.user.name,
+          email: data.user.email,
+          phone: data.user.phone,
+        });
+
+        setIsEditing(false);
+
+        alert("Profile updated successfully!");
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Server Error!");
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
   };
 
   return (
     <main className="min-h-screen bg-gray-50 py-16">
       <div className="max-w-4xl mx-auto px-6">
-
         <div className="bg-white rounded-2xl shadow-md overflow-hidden">
 
-          {/* Profile Header */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-8 text-white">
             <div className="flex flex-col sm:flex-row items-center gap-5">
 
@@ -58,10 +114,10 @@ function Profile() {
             </div>
           </div>
 
-          {/* Profile Information */}
           <div className="p-8">
 
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center mb-8">
+
               <h2 className="text-2xl font-bold">
                 Personal Information
               </h2>
@@ -75,6 +131,7 @@ function Profile() {
                   Edit Profile
                 </button>
               )}
+
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
@@ -93,8 +150,7 @@ function Profile() {
                 label="Email Address"
                 name="email"
                 value={user.email}
-                editing={isEditing}
-                onChange={handleChange}
+                editing={false}
               />
 
               <ProfileField
@@ -111,14 +167,14 @@ function Profile() {
                 label="Location"
                 name="location"
                 value={user.location}
-                editing={isEditing}
-                onChange={handleChange}
+                editing={false}
               />
 
             </div>
 
             {isEditing && (
               <div className="flex gap-3 mt-8">
+
                 <button
                   onClick={handleSave}
                   className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
@@ -132,22 +188,34 @@ function Profile() {
                 >
                   Cancel
                 </button>
+
               </div>
             )}
 
             <hr className="my-8 border-gray-200" />
 
-            <Link
-              to="/dashboard"
-              className="flex items-center justify-center gap-2 bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-800"
-            >
-              <FaCalendarCheck />
-              View My Bookings
-            </Link>
+            <div className="grid sm:grid-cols-2 gap-4">
+
+              <Link
+                to="/my-bookings"
+                className="flex items-center justify-center gap-2 bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-800"
+              >
+                <FaCalendarCheck />
+                View My Bookings
+              </Link>
+
+              <button
+                onClick={handleLogout}
+                className="flex items-center justify-center gap-2 bg-red-600 text-white py-3 rounded-lg hover:bg-red-700"
+              >
+                <FaSignOutAlt />
+                Logout
+              </button>
+
+            </div>
 
           </div>
         </div>
-
       </div>
     </main>
   );
@@ -178,7 +246,7 @@ function ProfileField({
         />
       ) : (
         <div className="bg-gray-50 rounded-lg px-4 py-3 font-medium">
-          {value}
+          {value || "Not provided"}
         </div>
       )}
     </div>

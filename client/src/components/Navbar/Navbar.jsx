@@ -75,7 +75,7 @@ function Navbar() {
 
           <li>
             <Link
-              to="/dashboard"
+              to="/my-bookings"
               onClick={closeMenu}
               className="hover:text-yellow-300"
             >

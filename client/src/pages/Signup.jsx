@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   FaUser,
   FaEnvelope,
@@ -10,6 +10,8 @@ import {
 } from "react-icons/fa";
 
 function Signup() {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -21,6 +23,8 @@ function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -29,10 +33,13 @@ function Signup() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
 
+    setError("");
+    setSuccess("");
+
+    // Frontend Validation
     if (!formData.name.trim()) {
       setError("Please enter your full name.");
       return;
@@ -58,14 +65,63 @@ function Signup() {
       return;
     }
 
-    alert("Account form validated successfully!");
+    try {
+      setLoading(true);
 
-    // Backend signup API will be connected later.
+      // REGISTER API
+      const response = await fetch(
+        "http://localhost:5000/api/auth/register",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            password: formData.password,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || "Registration failed.");
+        return;
+      }
+
+      setSuccess("Account created successfully!");
+
+      // Clear form
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        password: "",
+        confirmPassword: "",
+      });
+
+      // Go to login page after successful registration
+      setTimeout(() => {
+        navigate("/login");
+      }, 1200);
+    } catch (error) {
+      console.error(error);
+
+      setError(
+        "Unable to connect to server. Please make sure backend is running."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-indigo-700 to-blue-700 flex items-center justify-center px-4 py-10">
-
       <form
         onSubmit={handleSubmit}
         className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-8"
@@ -78,9 +134,17 @@ function Signup() {
           Join Local Service Finder
         </p>
 
+        {/* Error Message */}
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-600 p-3 rounded-lg mb-5">
             {error}
+          </div>
+        )}
+
+        {/* Success Message */}
+        {success && (
+          <div className="bg-green-50 border border-green-200 text-green-600 p-3 rounded-lg mb-5">
+            {success}
           </div>
         )}
 
@@ -205,9 +269,10 @@ function Signup() {
 
         <button
           type="submit"
-          className="w-full bg-indigo-700 hover:bg-indigo-800 text-white py-3 rounded-lg font-semibold transition"
+          disabled={loading}
+          className="w-full bg-indigo-700 hover:bg-indigo-800 disabled:bg-indigo-400 text-white py-3 rounded-lg font-semibold transition"
         >
-          Create Account
+          {loading ? "Creating Account..." : "Create Account"}
         </button>
 
         <p className="text-center mt-6">

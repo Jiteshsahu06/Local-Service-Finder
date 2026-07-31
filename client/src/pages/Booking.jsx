@@ -22,10 +22,51 @@ function Booking() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    alert("Booking submitted successfully!");
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+
+      if (!user) {
+        alert("Please login first!");
+        return;
+      }
+
+      const response = await fetch("http://localhost:5000/api/bookings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user: user._id || user.id,
+          customerName: formData.name,
+          phone: formData.phone,
+          service: serviceName,
+          address: formData.address,
+          bookingDate: formData.date,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Booking submitted successfully!");
+
+        setFormData({
+          name: "",
+          phone: "",
+          address: "",
+          date: "",
+          time: "",
+        });
+      } else {
+        alert(data.message || "Booking failed!");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong!");
+    }
   };
 
   return (
