@@ -70,7 +70,7 @@ function Signup() {
 
       // REGISTER API
       const response = await fetch(
-        "http://localhost:5000/api/auth/register",
+        "https://local-service-finder-fb3n.onrender.com/api/auth/register",
         {
           method: "POST",
 

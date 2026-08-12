@@ -11,7 +11,7 @@ function MyBookings() {
         const userId = user._id || user.id;
 
         const response = await fetch(
-          `http://localhost:5000/api/bookings?user=${userId}`
+          `https://local-service-finder-fb3n.onrender.com/api/bookings?user=${userId}`
         );
 
         const data = await response.json();
@@ -37,7 +37,7 @@ function MyBookings() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/bookings/${bookingId}`,
+        `https://local-service-finder-fb3n.onrender.com/api/bookings/${bookingId}`,
         {
           method: "DELETE",
         }

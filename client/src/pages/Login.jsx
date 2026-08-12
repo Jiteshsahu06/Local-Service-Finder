@@ -49,7 +49,7 @@ function Login() {
 
       // LOGIN API
       const response = await fetch(
-        "http://localhost:5000/api/auth/login",
+        "https://local-service-finder-fb3n.onrender.com/api/auth/login",
         {
           method: "POST",
 

@@ -8,7 +8,9 @@ const {
   getAllBookings,
   updateBookingStatus,
   deleteBooking,
+  deleteUser,
 } = require("../controllers/adminController");
+
 
 const router = express.Router();
 
@@ -42,6 +44,13 @@ router.delete(
   authMiddleware,
   adminMiddleware,
   deleteBooking
+);
+
+router.delete(
+  "/users/:id",
+  authMiddleware,
+  adminMiddleware,
+  deleteUser
 );
 
 module.exports = router;

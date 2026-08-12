@@ -35,7 +35,7 @@ function Profile() {
   const handleSave = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/auth/update-profile",
+        "https://local-service-finder-fb3n.onrender.com/api/auth/update-profile",
         {
           method: "PUT",
           headers: {
