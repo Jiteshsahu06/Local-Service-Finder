@@ -83,6 +83,7 @@ function Footer() {
               <p>Carpenter</p>
               <p>AC Repair</p>
               <p>Home Cleaning</p>
+              <p>Dry Cleaner </p>
             </div>
           </div>
 
@@ -100,12 +101,13 @@ function Footer() {
 
               <p className="flex items-center gap-3">
                 <FaPhoneAlt />
-                +91 XXXXX XXXXX
+                +91 8302744997
               </p>
 
               <p className="flex items-center gap-3">
                 <FaEnvelope />
                 support@localservicefinder.com
+                Jitesh4499sahu@gmail.com
               </p>
             </div>
           </div>
