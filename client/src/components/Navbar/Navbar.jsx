@@ -23,7 +23,7 @@ function Navbar() {
           onClick={closeMenu}
           className="text-2xl font-bold"
         >
-          Local Service Finder
+          NearSeva
         </Link>
 
         {/* Mobile Menu Button */}
